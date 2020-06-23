@@ -154,9 +154,9 @@ registerPatcher({
                   itemParse = true;
                 else if (settings.customMaterial != "" && xelib.EditorID(item).match(materialRegExp) != null && (count * settings.materialPercentage) >= 1)
                   itemParse = true;
-                if (!itemParse)
-                  return false;
               })
+              if (!itemParse)
+                return false;
             } else
               return false;
 
