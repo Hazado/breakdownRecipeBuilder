@@ -73,11 +73,16 @@ registerPatcher({
             //Filter out all records that are not made in forges or custom Crafting Station
             let re = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge', 'i');
             if (settings.customCraftingStations != "") {
-              re = re + '|' + settings.customCraftingStations.replace(',', '|');
+              re = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge' + '|' + settings.customCraftingStations.replace(',', '|'), 'i');
             }
             if (xelib.GetValue(record, 'BNAM').match(re) == null) {
               return false;
             }
+
+			//Filter out records that dont craft anything
+			if (!xelib.HasElement(record, 'CNAM')) {
+				return false;
+			}
 
             //Filter out enchanted items
             if (settings.enchanted == false) {
