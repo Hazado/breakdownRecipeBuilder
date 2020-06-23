@@ -1,0 +1,12 @@
+{
+  "id": "breakdownRecipeBuilder",
+  "name": "Breakdown Recipe Builder",
+  "author": "Hazado",
+  "version": "1.0.0",
+  "released": "6/22/2020",
+  "updated": "6/22/2020",
+  "description": "An example of a patcher which uses zEdit's Unified Patching System.",
+  "requires": ["unifiedPatchingFramework"],
+  "moduleLoader": "UPF",
+  "canHotLoad": true
+}
