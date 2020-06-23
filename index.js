@@ -30,6 +30,13 @@ registerPatcher({
     // default zPatch.esp plugin file.  (using zPatch.esp is recommended)
     defaultSettings: {
       materialPercentage: 0.5,
+      enchanted: false,
+      daedric: true,
+      dragon: true,
+      chitin: true,
+      bone: true,
+      customMaterialFilter: "",
+      customCraftingStations: "",
       patchFileName: 'zPatch.esp'
     }
   },
@@ -62,11 +69,72 @@ registerPatcher({
           overrides: true,
           filter: function (record) {
             // return false to filter out (ignore) a particular record
-            if (xelib.GetValue(record, 'BNAM').match(/CraftingSmithingForge|CraftingSmithingSkyforge/) == null) {
+
+            //Filter out all records that are not made in forges or custom Crafting Station
+            let re = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge', 'i');
+            if (settings.customCraftingStations != "") {
+              re = re + '|' + settings.customCraftingStations.replace(',', '|');
+            }
+            if (xelib.GetValue(record, 'BNAM').match(re) == null) {
               return false;
             }
 
+            //Filter out enchanted items
+            if (settings.enchanted == false) {
+              let item = xelib.GetLinksTo(record, 'CNAM');
+              if (xelib.HasElement(item, 'EITM')) {
+                return false;
+              }
+            }
+
+            //Filter out records without required items or proper amount
             if (xelib.HasElement(record, 'Items')) {
+
+              //Filter out Daedric items
+              if (settings.daedric == false) {
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(/DaedraHeart/i) != null)
+                  }) != undefined)
+                  return false;
+              }
+
+              //Filter out dragon items
+              if (settings.dragon == false) {
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(/DragonBone|DragonScales/i) != null)
+                  }) != undefined)
+                  return false;
+              }
+
+              //Filter out chitin items
+              if (settings.chitin == false) {
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(/chitin/i) != null)
+                  }) != undefined)
+                  return false;
+              }
+
+              //Filter out bonemold items
+              if (settings.bone == false) {
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(/BoneMeal/i) != null)
+                  }) != undefined)
+                  return false;
+              }
+
+              //Filter out custom materials
+              if (settings.customMaterialFilter != "") {
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(settings.customMaterialFilter.replace(',', '|')) != null)
+                  }) != undefined)
+                  return false;
+              }
+
               let itemParse = false;
               xelib.GetElements(record, 'Items').forEach(rec => {
                 let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
@@ -92,7 +160,7 @@ registerPatcher({
           // you can also remove the record here, but it is discouraged.
           // (try to use filters instead.)
           helpers.logMessage(`Patching ${xelib.LongName(record)}`);
-		  xelib.SetValue(record, 'COCT', '30');
+          xelib.SetValue(record, 'COCT', '30');
         }
       }
       /*, {
