@@ -35,7 +35,7 @@ registerPatcher({
       dragon: true,
       chitin: true,
       bone: true,
-	  customMaterial: "",
+      customMaterial: "",
       customMaterialFilter: "",
       customCraftingStations: "",
       patchFileName: 'zPatch.esp'
@@ -72,11 +72,11 @@ registerPatcher({
             // return false to filter out (ignore) a particular record
 
             //Filter out all records that are not made in forges or custom Crafting Station
-            let re = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge', 'i');
+            let stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge', 'i');
             if (settings.customCraftingStations != "") {
-              re = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge' + '|' + settings.customCraftingStations.replace(',', '|'), 'i');
+              stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge' + '|' + settings.customCraftingStations.replace(',', '|'), 'i');
             }
-            if (xelib.GetValue(record, 'BNAM').match(re) == null) {
+            if (xelib.GetValue(record, 'BNAM').match(stationRegExp) == null) {
               return false;
             }
 
@@ -140,27 +140,25 @@ registerPatcher({
                   }) != undefined)
                   return false;
               }
-			  
-			  //Filter out items that dont have required item or enough of item
+
+              //Filter out items that dont have required item or enough of item
               let itemParse = false;
               xelib.GetElements(record, 'Items').forEach(rec => {
                 let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
                 let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
-				let re = new RegExp(settings.customMaterial, 'i');
+                let materialRegExp = new RegExp(settings.customMaterial.replace(',', '|'), 'i');
 
                 if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
                   return;
-                else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1) {
+                else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1)
                   itemParse = true;
-				else if (settings.customMaterial != "" && xelib.EditorID(item).match(re) != null && (count * settings.materialPercentage) >= 1) {
+                else if (settings.customMaterial != "" && xelib.EditorID(item).match(materialRegExp) != null && (count * settings.materialPercentage) >= 1)
                   itemParse = true;
-                }
+                if (!itemParse)
+                  return false;
               })
-              if (!itemParse)
-                return false;
-            } else {
+            } else
               return false;
-            }
 
             return true;
           }
