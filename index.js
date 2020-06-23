@@ -29,7 +29,7 @@ registerPatcher({
     // you want to use a unique patch file for your patcher instead of the
     // default zPatch.esp plugin file.  (using zPatch.esp is recommended)
     defaultSettings: {
-      exampleSetting: 'hello world',
+      materialPercentage: 0.5,
       patchFileName: 'zPatch.esp'
     }
   },
@@ -59,7 +59,7 @@ registerPatcher({
     process: [{
         load: {
           signature: 'COBJ',
-          //overrides: true,
+          overrides: true,
           filter: function (record) {
             // return false to filter out (ignore) a particular record
             if (xelib.GetValue(record, 'BNAM').match(/CraftingSmithingForge|CraftingSmithingSkyforge/) == null) {
@@ -67,15 +67,19 @@ registerPatcher({
             }
 
             if (xelib.HasElement(record, 'Items')) {
-              if (xelib.GetElements(record, 'Items').find(rec => {
-                  let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
-                  if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
-                    return false;
-                  else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null)
-                    return true;
-                }) == undefined) {
+              let itemParse = false;
+              xelib.GetElements(record, 'Items').forEach(rec => {
+                let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
+
+                if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
+                  return;
+                else if ((xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null) && ((count * settings.materialPercentage) >= 1)) {
+                  itemParse = true;
+                }
+              })
+              if (!itemParse)
                 return false;
-              }
             } else {
               return false;
             }
@@ -88,7 +92,7 @@ registerPatcher({
           // you can also remove the record here, but it is discouraged.
           // (try to use filters instead.)
           helpers.logMessage(`Patching ${xelib.LongName(record)}`);
-          
+		  xelib.SetValue(record, 'COCT', '30');
         }
       }
       /*, {
