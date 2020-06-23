@@ -35,6 +35,7 @@ registerPatcher({
       dragon: true,
       chitin: true,
       bone: true,
+	  customMaterial: "",
       customMaterialFilter: "",
       customCraftingStations: "",
       patchFileName: 'zPatch.esp'
@@ -79,10 +80,10 @@ registerPatcher({
               return false;
             }
 
-			//Filter out records that dont craft anything
-			if (!xelib.HasElement(record, 'CNAM')) {
-				return false;
-			}
+            //Filter out records that dont craft anything
+            if (!xelib.HasElement(record, 'CNAM')) {
+              return false;
+            }
 
             //Filter out enchanted items
             if (settings.enchanted == false) {
@@ -92,7 +93,7 @@ registerPatcher({
               }
             }
 
-            //Filter out records without required items or proper amount
+            //Filter out records without required items
             if (xelib.HasElement(record, 'Items')) {
 
               //Filter out Daedric items
@@ -139,15 +140,19 @@ registerPatcher({
                   }) != undefined)
                   return false;
               }
-
+			  
+			  //Filter out items that dont have required item or enough of item
               let itemParse = false;
               xelib.GetElements(record, 'Items').forEach(rec => {
                 let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
                 let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
+				let re = new RegExp(settings.customMaterial, 'i');
 
                 if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
                   return;
-                else if ((xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null) && ((count * settings.materialPercentage) >= 1)) {
+                else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1) {
+                  itemParse = true;
+				else if (settings.customMaterial != "" && xelib.EditorID(item).match(re) != null && (count * settings.materialPercentage) >= 1) {
                   itemParse = true;
                 }
               })
