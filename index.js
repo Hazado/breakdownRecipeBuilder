@@ -104,16 +104,7 @@ registerPatcher({
                   return false;
               }
 
-              //Filter out custom materials
-              if (settings.customMaterialFilter != "") {
-                if (xelib.GetElements(record, 'Items').find(rec => {
-                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
-                    return (xelib.EditorID(item).match(settings.customMaterialFilter.replace(',', '|')) != null)
-                  }) != undefined)
-                  return false;
-              }
-
-			  //Filter out crafted items
+              //Filter out crafted items
               if (settings.ignoreCNAM != "") {
                 if (xelib.GetValue(record, 'CNAM').match(settings.ignoreCNAM.replace(',', '|')) != null)
                   return false;
@@ -127,6 +118,8 @@ registerPatcher({
                 let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
 
                 if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
+                  return;
+                else if (settings.customMaterialFilter != "" && xelib.EditorID(item).match(settings.customMaterialFilter.replace(',', '|')) != null)
                   return;
                 else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1)
                   itemParse = true;
