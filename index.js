@@ -51,23 +51,23 @@ registerPatcher({
   return filenames.subtract([`${gameName}.esm`]);
   },*/
   execute: (patchFile, helpers, settings, locals) => ({
-    initialize: function () {
-      // Optional function, omit if empty.
-      // Perform anything that needs to be done once at the beginning of the
-      // patcher's execution here.  This can be used to cache records which don't
-      // need to be patched, but need to be referred to later on.  Store values
-      // on the locals variable to refer to them later in the patching process.
-      helpers.logMessage(settings.exampleSetting);
-      // this line shows you how to load records using the loadRecords helper
-      // function and store them on locals for the purpose of caching
-      locals.recipes = helpers.loadRecords('COBJ');
-    },
+    //initialize: function () {
+    // Optional function, omit if empty.
+    // Perform anything that needs to be done once at the beginning of the
+    // patcher's execution here.  This can be used to cache records which don't
+    // need to be patched, but need to be referred to later on.  Store values
+    // on the locals variable to refer to them later in the patching process.
+    //helpers.logMessage(settings.exampleSetting);
+    // this line shows you how to load records using the loadRecords helper
+    // function and store them on locals for the purpose of caching
+    //locals.recipes = helpers.loadRecords('COBJ');
+    //},
     // required: array of process blocks. each process block should have both
     // a load and a patch function.
     process: [{
         load: {
           signature: 'COBJ',
-          overrides: true,
+          //overrides: true,
           filter: function (record) {
             // return false to filter out (ignore) a particular record
 
@@ -164,26 +164,42 @@ registerPatcher({
           }
         },
         patch: function (record) {
-          // change values on the record as required
-          // you can also remove the record here, but it is discouraged.
-          // (try to use filters instead.)
-          helpers.logMessage(`Patching ${xelib.LongName(record)}`);
-          xelib.SetValue(record, 'COCT', '30');
+          let recordBreakdown = xelib.GetLinksTo(record, 'CNAM');
+          if (!xelib.HasElement(patchFile, `Breakdown_${xelib.EditorID(recordBreakdown)}`)) {
+            helpers.logMessage(`Patching ${xelib.LongName(record)}`);
+            let recordNAM1 = 0;
+            let recordCNAM;
+            xelib.GetElements(record, 'Items').find(rec => {
+              let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+              let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
+              let materialRegExp = new RegExp(settings.customMaterial.replace(',', '|'), 'i');
+              if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
+                return false;
+              else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1) {
+                recordCNAM = item;
+                recordNAM1 = Math.floor(count * settings.materialPercentage);
+                return true;
+              } else if (settings.customMaterial != "" && xelib.EditorID(item).match(materialRegExp) != null && (count * settings.materialPercentage) >= 1) {
+                recordCNAM = item;
+                recordNAM1 = Math.floor(count * settings.materialPercentage);
+                return true;
+              }
+            });
+            let breakdownRecord = xelib.AddElement(patchFile, `COBJ\\COBJ`);
+            helpers.cacheRecord(breakdownRecord, `Breakdown_${xelib.EditorID(recordBreakdown)}`);
+            xelib.AddElementValue(breakdownRecord, 'EDID', `Breakdown_${xelib.EditorID(recordBreakdown)}`);
+            xelib.AddElementValue(breakdownRecord, 'Items\\[0]\\CNTO - Item\\Item', xelib.EditorID(recordBreakdown));
+            xelib.AddElementValue(breakdownRecord, 'Items\\[0]\\CNTO - Item\\Count', xelib.GetValue(record, 'NAM1'));
+            xelib.AddElementValue(breakdownRecord, 'CNAM', xelib.EditorID(recordCNAM));
+            if (xelib.EditorID(recordCNAM).match(/leather/i) != null) {
+              xelib.AddElementValue(breakdownRecord, 'BNAM', '0007866A');
+            } else {
+              xelib.AddElementValue(breakdownRecord, 'BNAM', '000A5CCE');
+            }
+            xelib.AddElementValue(breakdownRecord, 'NAM1', recordNAM1.toString());
+          }
         }
       }
-      /*, {
-      // loads all REFRs that place Weapons
-      records: filesToPatch => {
-      let records = filesToPatch.map(f => {
-      return xelib.GetRefrs(f, 'WEAP');
-      });
-      return Array.prototype.concat.apply([], records);
-      },
-      // patches REFRs that place weapons to be initially disabled
-      patch: function (record) {
-      xelib.SetFlag(record, 'Record Header\\Record Flags', 'Initially Disabled', true);
-      }
-      }*/
     ],
     finalize: function () {}
   })
