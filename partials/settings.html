@@ -1,14 +1,31 @@
-<h2>Example Patcher</h2>
-
-<section>
-    <ignore-plugins patcher-id="matorsExamplePatcher"></ignore-plugins>
-</section>
+<h2>Breakdown Recipe Builder</h2>
 
 <section>
     <div>
-        <span class="input-label" title="The value specified here will be displayed &#13;in an alert when the patcher initialized.">Example Setting</span>
-        <input type="text" ng-model="settings.matorsExamplePatcher.exampleSetting"/>
+        <span class="input-label" title="Used to determine recipes that get breakdown.">Material returned after breakdown</span>
+		<input type="number" ng-model="settings.breakdownRecipeBuilder.materialPercentage" min="0.1" max="10" step="0.1" /><br/>
+		<span class="input-label" title="Ignore recipes that create enchanted items">Enchanted items broken down</span>
+        <input type="checkbox" ng-model="settings.breakdownRecipeBuilder.enchanted"/><br/>
+		<span class="input-label" title="Ignore recipes that create Daedric items">Daedric items broken down</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.daedric"/><br/>
+		<span class="input-label" title="Ignore recipes that create Dragonic items">Draconic items broken down</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.dragon"/><br/>
+		<span class="input-label" title="Ignore recipes that create Chitin items">Chitin items broken down</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.chitin"/><br/>
+		<span class="input-label" title="Ignore recipes that create Bonemold items">Bonemold items broken down</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.bone"/><br/>
+		<span class="input-label" title="Hides breakdown recipes if you dont have the item">Hide Recipes at crafting station</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.hideRecipe"/><br/>
+		<span class="input-label" title="Create recipes for each item that meets material requirements">Multiple recipe breakdown</span>
+		<input type="checkbox" ng-model="settings.breakdownRecipeBuilder.multiRecipes"/><br/>
+		<p/>Seperate each item with a comma ( , ) or a verticle line ( | )<br/>
+		<span class="input-label" title="Adds additional items to look for breaking down">Custom Material</span>
+		<input type="text" ng-model="settings.breakdownRecipeBuilder.customMaterial"/><br/>
+		<span class="input-label" title="Filter out additional items from being broken down">Custom Material Filter</span>
+		<input type="text" ng-model="settings.breakdownRecipeBuilder.customMaterialFilter"/><br/>
+		<span class="input-label" title="Add additional crafting stations to look at for breakdown recipes">Custom Crafting Station</span>
+		<input type="text" ng-model="settings.breakdownRecipeBuilder.customCraftingStations"/><br/>
+		<span class="input-label" title="Doesnt create breakdown recipes for items listed here">Ignored Item Recipes</span>
+		<input type="text" ng-model="settings.breakdownRecipeBuilder.ignoreCNAM"/><br/>
     </div>
-
-    <button class="action-btn" ng-click="showMessage()">Show message</button>
 </section>
