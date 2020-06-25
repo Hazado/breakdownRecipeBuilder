@@ -28,10 +28,11 @@ registerPatcher({
       dragon: true,
       chitin: true,
       bone: true,
-	  hideRecipe: true,
+      hideRecipe: true,
       customMaterial: "",
       customMaterialFilter: "",
-      customCraftingStations: ""
+      customCraftingStations: "",
+      ignoreCNAM: "LeatherStrips"
     }
   },
   execute: (patchFile, helpers, settings, locals) => ({
@@ -43,9 +44,9 @@ registerPatcher({
             // return false to filter out (ignore) a particular record
 
             //Filter out all records that are not made in forges or custom Crafting Station
-            let stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge', 'i');
+            let stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge|CraftingTanningRack', 'i');
             if (settings.customCraftingStations != "") {
-              stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge' + '|' + settings.customCraftingStations.replace(',', '|'), 'i');
+              stationRegExp = new RegExp('CraftingSmithingForge|CraftingSmithingSkyforge|CraftingTanningRack' + '|' + settings.customCraftingStations.replace(',', '|'), 'i');
             }
             if (xelib.GetValue(record, 'BNAM').match(stationRegExp) == null) {
               return false;
@@ -112,12 +113,18 @@ registerPatcher({
                   return false;
               }
 
+			  //Filter out crafted items
+              if (settings.ignoreCNAM != "") {
+                if (xelib.GetValue(record, 'CNAM').match(settings.ignoreCNAM.replace(',', '|')) != null)
+                  return false;
+              }
+
               //Filter out items that dont have required item or enough of item
               let itemParse = false;
+              let materialRegExp = new RegExp(settings.customMaterial.replace(',', '|'), 'i');
               xelib.GetElements(record, 'Items').forEach(rec => {
                 let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
                 let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
-                let materialRegExp = new RegExp(settings.customMaterial.replace(',', '|'), 'i');
 
                 if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
                   return;
@@ -140,20 +147,21 @@ registerPatcher({
             helpers.logMessage(`Patching ${xelib.LongName(record)}`);
             let recordNAM1 = 0;
             let recordCNAM;
+            let recordBNAM = xelib.GetLinksTo(record, 'BNAM');
+            let customCraftingStationsRegExp = new RegExp(settings.customCraftingStations.replace(',', '|'), 'i');
             xelib.GetElements(record, 'Items').find(rec => {
               let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
               let count = xelib.GetValue(rec, 'CNTO - Item\\Count');
-              let materialRegExp = new RegExp(settings.customMaterial.replace(',', '|'), 'i');
-			  if ((count * settings.materialPercentage) <= recordNAM1)
-				  return false;
+              if ((count * settings.materialPercentage) <= recordNAM1)
+                return false;
               if (xelib.EditorID(item).match(/LeatherStrips/i) != null)
                 return false;
               else if (xelib.EditorID(item).match(/ingot|scale|bone|chitin|stalhrim|leather/i) != null && (count * settings.materialPercentage) >= 1) {
                 recordCNAM = item;
-                recordNAM1 = Math.floor(count * settings.materialPercentage);
+                recordNAM1 = count * settings.materialPercentage;
               } else if (settings.customMaterial != "" && xelib.EditorID(item).match(materialRegExp) != null && (count * settings.materialPercentage) >= 1) {
                 recordCNAM = item;
-                recordNAM1 = Math.floor(count * settings.materialPercentage);
+                recordNAM1 = count * settings.materialPercentage;
               }
             });
             let breakdownRecord = xelib.AddElement(patchFile, `COBJ\\COBJ`);
@@ -162,19 +170,22 @@ registerPatcher({
             xelib.AddElementValue(breakdownRecord, 'Items\\[0]\\CNTO - Item\\Item', xelib.EditorID(recordBreakdown));
             xelib.AddElementValue(breakdownRecord, 'Items\\[0]\\CNTO - Item\\Count', xelib.GetValue(record, 'NAM1'));
             xelib.AddElementValue(breakdownRecord, 'CNAM', xelib.EditorID(recordCNAM));
-			xelib.AddElementValue(breakdownRecord, 'NAM1', recordNAM1.toString());
-			
-			//Use Smelter or Tanning Rack
+            xelib.AddElementValue(breakdownRecord, 'NAM1', Math.floor(recordNAM1).toString());
+
+            //Use Smelter or Tanning Rack
             if (xelib.EditorID(recordCNAM).match(/leather/i) != null) {
               xelib.AddElementValue(breakdownRecord, 'BNAM', '0007866A');
+              //Custom Crafting Station recipes go back to Custom Crafting Station
+            } else if (xelib.EditorID(recordBNAM).match(customCraftingStationsRegExp) != null) {
+              xelib.AddElementValue(breakdownRecord, 'BNAM', xelib.EditorID(recordBNAM));
             } else {
               xelib.AddElementValue(breakdownRecord, 'BNAM', '000A5CCE');
             }
-			
-			//Hide recipe unless you have required items
-			if (settings.hideRecipe) {
-				xelib.AddCondition(breakdownRecord, 'GetItemCount', '11000000', xelib.GetValue(record, 'NAM1').toString(), xelib.EditorID(recordBreakdown));
-			}
+
+            //Hide recipe unless you have required items
+            if (settings.hideRecipe) {
+              xelib.AddCondition(breakdownRecord, 'GetItemCount', '11000000', xelib.GetValue(record, 'NAM1').toString(), xelib.EditorID(recordBreakdown));
+            }
           }
         }
       }
