@@ -30,6 +30,7 @@ registerPatcher({
       bone: true,
       hideRecipe: true,
       multiRecipes: true,
+      usePerk: true,
       customMaterial: "",
       customMaterialFilter: "",
       customCraftingStations: "",
@@ -185,6 +186,38 @@ registerPatcher({
               //Hide recipe unless you have required items
               if (settings.hideRecipe) {
                 xelib.AddCondition(breakdownRecord, 'GetItemCount', '11000000', xelib.GetValue(record, 'NAM1').toString(), xelib.EditorID(recordBreakdown));
+              }
+
+              //Add perks as condition to have recipes
+              if (settings.usePerk) {
+                if (xelib.HasElement(recordBreakdown, 'EITM')) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'ArcaneBlacksmith')
+                }
+                if (xelib.GetElements(record, 'Items').find(rec => {
+                    let item = xelib.GetLinksTo(rec, 'CNTO - Item\\Item');
+                    return (xelib.EditorID(item).match(/DaedraHeart/i) != null)
+                  }) != undefined) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DaedricSmithing')
+                }
+                if (xelib.EditorID(recordCNAM).match(/steel/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'SteelSmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/dwarven/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DwarvenSmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/moonstone|calcinium/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'ElvenSmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/orichalcum/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'OrcishSmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/malachite/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'GlassSmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/ebony|stalhrim/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'EbonySmithing')
+                } else if (xelib.EditorID(recordCNAM).match(/dragonbone|dragonscales/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DragonArmor')
+                } else if (xelib.EditorID(recordCNAM).match(/corundum/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'AdvancedArmors')
+                } else if (xelib.EditorID(recordCNAM).match(/bonemeal/i) != null) {
+                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DLC2Smithing')
+                }
               }
             }
           });
