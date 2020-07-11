@@ -199,7 +199,7 @@ registerPatcher({
                   }) != undefined) {
                   xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DaedricSmithing')
                 }
-                if (xelib.EditorID(recordCNAM).match(/steel/i) != null) {
+                if (xelib.EditorID(recordCNAM).match(/steel|bonemeal/i) != null) {
                   xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'SteelSmithing')
                 } else if (xelib.EditorID(recordCNAM).match(/dwarven/i) != null) {
                   xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DwarvenSmithing')
@@ -215,8 +215,6 @@ registerPatcher({
                   xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DragonArmor')
                 } else if (xelib.EditorID(recordCNAM).match(/corundum/i) != null) {
                   xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'AdvancedArmors')
-                } else if (xelib.EditorID(recordCNAM).match(/bonemeal/i) != null) {
-                  xelib.AddCondition(breakdownRecord, 'HasPerk', '11000000', '1', 'DLC2Smithing')
                 }
               }
             }
