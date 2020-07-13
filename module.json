@@ -3,9 +3,9 @@
   "name": "Breakdown Recipe Builder",
   "author": "Hazado",
   "version": "1.0.0",
-  "released": "6/22/2020",
-  "updated": "6/22/2020",
-  "description": "An example of a patcher which uses zEdit's Unified Patching System.",
+  "released": "7/13/2020",
+  "updated": "7/13/2020",
+  "description": "Creates Breakdown Recipes to reclaim materials from armor, weapons and other custom items.",
   "requires": ["unifiedPatchingFramework"],
   "moduleLoader": "UPF",
   "canHotLoad": true

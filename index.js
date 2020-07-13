@@ -30,7 +30,7 @@ registerPatcher({
       bone: true,
       hideRecipe: true,
       multiRecipes: true,
-      usePerk: true,
+      usePerk: false,
       customMaterial: "",
       customMaterialFilter: "",
       customCraftingStations: "",
